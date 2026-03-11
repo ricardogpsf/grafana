@@ -252,6 +252,7 @@ export class GrafanaBootConfig {
    * Grafana's supported language.
    */
   language: string | undefined;
+  announcementBannerText = '';
 
   /**
    * regionalFormat used in Grafana's UI. Default to 'es-US' in the backend and overwritten when the user select a different one in SharedPreferences.
