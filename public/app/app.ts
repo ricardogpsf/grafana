@@ -52,7 +52,7 @@ import { getStandardTransformers } from 'app/features/transformers/standardTrans
 
 import getDefaultMonacoLanguages from '../lib/monaco-languages';
 
-import { AppWrapper } from './AppWrapper';
+import { AppWrapper, addPageBanner } from './AppWrapper';
 import appEvents from './core/app_events';
 import { AppChromeService } from './core/components/AppChrome/AppChromeService';
 import { useChromeHeaderHeight } from './core/components/AppChrome/TopBar/useChromeHeaderHeight';
@@ -92,6 +92,7 @@ import { usePluginLinks } from './features/plugins/extensions/usePluginLinks';
 import { getAppPluginsToAwait, getAppPluginsToPreload } from './features/plugins/extensions/utils';
 import { importPanelPlugin, syncGetPanelPlugin } from './features/plugins/importPanelPlugin';
 import { preloadPlugins } from './features/plugins/pluginPreloader';
+import { AnnouncementBanner } from './features/announcement-banner/AnnouncementBanner';
 import { QueryRunner } from './features/query/state/QueryRunner';
 import { runRequest } from './features/query/state/runRequest';
 import { initWindowRuntime } from './features/runtime/init';
@@ -261,6 +262,12 @@ export class GrafanaApp {
       if (config.featureToggles.crashDetection) {
         initializeCrashDetection();
       }
+
+
+      if (config.announcementBannerText) {
+        addPageBanner(AnnouncementBanner);
+      }
+
 
       const root = createRoot(document.getElementById('reactRoot')!);
       root.render(
