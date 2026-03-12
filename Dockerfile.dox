@@ -48,7 +48,7 @@ RUN go build \
       ./pkg/cmd/grafana
 
 # ── Final image ───────────────────────────────────────────────────────────────
-FROM grafana/grafana:12.3.0
+FROM grafana/grafana:12.0.2
 
 # Replace the server binary and the frontend bundle
 COPY --from=go-builder /src/bin/grafana /usr/share/grafana/bin/grafana
