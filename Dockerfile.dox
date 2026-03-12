@@ -1,6 +1,16 @@
 # Multi-stage build for custom Grafana with announcement banner support.
-# Stage 1 builds the frontend, Stage 2 builds the Go backend,
-# Stage 3 produces the final image on top of the official Grafana base.
+# Stage 1 builds the frontend, Stage 2 builds the Go backend (or reuses a
+# previously built binary via GO_BINARY_IMAGE), Stage 3 produces the final image.
+#
+# Full build (Go + frontend):
+#   docker build --platform linux/amd64 -f Dockerfile.dox -t ricardogpsf/grafana-dox:TAG .
+#
+# Frontend-only build (reuse Go binary from existing image):
+#   docker build --platform linux/amd64 -f Dockerfile.dox \
+#     --build-arg GO_BINARY_IMAGE=ricardogpsf/grafana-dox:12.0.2-banner-2 \
+#     -t ricardogpsf/grafana-dox:TAG .
+
+ARG GO_BINARY_IMAGE=
 
 # ── Frontend build ────────────────────────────────────────────────────────────
 FROM node:24-alpine AS js-builder
@@ -49,9 +59,12 @@ RUN go build \
       -o bin/grafana \
       ./pkg/cmd/grafana
 
+# ── Go binary source (full build or reuse from existing image) ─────────────────
+FROM ${GO_BINARY_IMAGE:-go-builder} AS go-source
+
 # ── Final image ───────────────────────────────────────────────────────────────
 FROM grafana/grafana:12.0.2
 
 # Replace the server binary and the frontend bundle
-COPY --from=go-builder /src/bin/grafana /usr/share/grafana/bin/grafana
+COPY --from=go-source /usr/share/grafana/bin/grafana /usr/share/grafana/bin/grafana
 COPY --from=js-builder /src/public              /usr/share/grafana/public
