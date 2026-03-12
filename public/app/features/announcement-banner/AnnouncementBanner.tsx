@@ -48,7 +48,7 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => ({
       margin: 0,
     },
     '& a': {
-      color: theme.colors.info.shade,
+      color: theme.colors.info.text,
       textDecoration: 'underline',
     },
   }),
