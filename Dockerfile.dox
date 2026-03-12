@@ -41,6 +41,8 @@ COPY . .
 
 RUN go mod download
 
+RUN go run ./pkg/build/wire/cmd/wire/main.go gen -tags oss ./pkg/server
+
 RUN go build \
       -tags oss \
       -ldflags "-w -s" \
