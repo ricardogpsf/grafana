@@ -25,13 +25,14 @@ RUN apk add --no-cache make build-base python3
 COPY package.json project.json nx.json yarn.lock .yarnrc.yml ./
 COPY .yarn .yarn
 COPY packages packages
-COPY e2e-playwright e2e-playwright
+RUN yarn install --immutable
+
+# Copy source files after yarn install so changing them doesn't bust the install cache
 COPY public public
+COPY e2e-playwright e2e-playwright
 COPY LICENSE ./
 COPY conf/defaults.ini ./conf/defaults.ini
 COPY e2e e2e
-RUN yarn install --immutable
-
 COPY tsconfig.json eslint.config.js .editorconfig .browserslistrc .prettierrc.js ./
 COPY scripts scripts
 COPY emails emails
