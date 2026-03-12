@@ -284,6 +284,9 @@ type FrontendSettingsDTO struct {
 
 	SqlConnectionLimits FrontendSettingsSqlConnectionLimitsDTO `json:"sqlConnectionLimits"`
 
+	// Announcement Banner
+	AnnouncementBannerText string `json:"announcementBannerText,omitempty"`
+
 	// Enterprise
 	Licensing     *FrontendSettingsLicensingDTO     `json:"licensing,omitempty"`
 	Whitelabeling *FrontendSettingsWhitelabelingDTO `json:"whitelabeling,omitempty"`

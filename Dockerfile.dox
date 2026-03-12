@@ -1,0 +1,70 @@
+# Multi-stage build for custom Grafana with announcement banner support.
+# Stage 1 builds the frontend, Stage 2 builds the Go backend (or reuses a
+# previously built binary via GO_BINARY_IMAGE), Stage 3 produces the final image.
+#
+# Full build (Go + frontend):
+#   docker build --platform linux/amd64 -f Dockerfile.dox -t ricardogpsf/grafana-dox:TAG .
+#
+# Frontend-only build (reuse Go binary from existing image):
+#   docker build --platform linux/amd64 -f Dockerfile.dox \
+#     --build-arg GO_BINARY_IMAGE=ricardogpsf/grafana-dox:12.0.2-banner-2 \
+#     -t ricardogpsf/grafana-dox:TAG .
+
+ARG GO_BINARY_IMAGE=
+
+# ── Frontend build ────────────────────────────────────────────────────────────
+FROM node:24-alpine AS js-builder
+
+ENV NODE_OPTIONS=--max_old_space_size=8000
+
+WORKDIR /src
+
+RUN apk add --no-cache make build-base python3
+
+# Install dependencies first (layer-cached unless lockfile changes)
+COPY package.json project.json nx.json yarn.lock .yarnrc.yml ./
+COPY .yarn .yarn
+COPY packages packages
+COPY e2e-playwright e2e-playwright
+COPY public public
+COPY LICENSE ./
+COPY conf/defaults.ini ./conf/defaults.ini
+COPY e2e e2e
+RUN yarn install --immutable
+
+COPY tsconfig.json eslint.config.js .editorconfig .browserslistrc .prettierrc.js ./
+COPY scripts scripts
+COPY emails emails
+
+ENV NODE_ENV=production
+RUN yarn build
+
+# ── Go build ──────────────────────────────────────────────────────────────────
+FROM golang:1.25.3-alpine AS go-builder
+
+RUN apk add --no-cache gcc g++ make git
+
+WORKDIR /src
+
+COPY go.mod go.sum ./
+COPY . .
+
+RUN go mod download
+
+RUN go run ./pkg/build/wire/cmd/wire/main.go gen -tags oss ./pkg/server
+
+RUN go build \
+      -tags oss \
+      -ldflags "-w -s" \
+      -o bin/grafana \
+      ./pkg/cmd/grafana
+
+# ── Go binary source (full build or reuse from existing image) ─────────────────
+FROM ${GO_BINARY_IMAGE:-go-builder} AS go-source
+
+# ── Final image ───────────────────────────────────────────────────────────────
+FROM grafana/grafana:12.0.2
+
+# Replace the server binary and the frontend bundle
+COPY --from=go-source /usr/share/grafana/bin/grafana /usr/share/grafana/bin/grafana
+COPY --from=js-builder /src/public              /usr/share/grafana/public

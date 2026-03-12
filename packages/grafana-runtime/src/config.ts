@@ -208,6 +208,7 @@ export class GrafanaBootConfig implements GrafanaConfig {
    * Grafana's supported language.
    */
   language: string | undefined;
+  announcementBannerText = '';
 
   /**
    * Locale used in Grafana's UI. Default to 'es-US' in the backend and overwritten when the user select a different one in SharedPreferences.
