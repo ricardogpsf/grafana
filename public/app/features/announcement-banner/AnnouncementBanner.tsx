@@ -17,7 +17,7 @@ export function AnnouncementBanner() {
 
   return (
     <div className={styles.banner} role="banner">
-      <span dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }} />
+      <div className={styles.text} dangerouslySetInnerHTML={{ __html: renderMarkdown(text) }} />
       <button className={styles.closeButton} onClick={() => setDismissed(true)} aria-label="Close announcement">
         ✕
       </button>
@@ -41,7 +41,19 @@ const getStyles = (theme: GrafanaTheme2, headerHeight: number) => ({
     justifyContent: 'center',
     gap: theme.spacing(1),
   }),
+  text: css({
+    flex: 1,
+    minWidth: 0,
+    '& p': {
+      margin: 0,
+    },
+    '& a': {
+      color: 'inherit',
+      textDecoration: 'underline',
+    },
+  }),
   closeButton: css({
+    flexShrink: 0,
     background: 'none',
     border: 'none',
     color: 'inherit',
