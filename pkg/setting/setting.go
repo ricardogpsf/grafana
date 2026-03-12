@@ -605,6 +605,9 @@ type Cfg struct {
 
 	// Secrets Management
 	SecretsManagement SecretsManagerSettings
+
+	// Announcement Banner
+	AnnouncementBannerText string
 }
 
 type UnifiedStorageConfig struct {
@@ -1286,6 +1289,9 @@ func (cfg *Cfg) parseINIFile(iniFile *ini.File) error {
 	if err := cfg.readAlertingSettings(iniFile); err != nil {
 		return err
 	}
+
+	announcementBanner := iniFile.Section("announcement_banner")
+	cfg.AnnouncementBannerText = announcementBanner.Key("text").MustString("")
 
 	explore := iniFile.Section("explore")
 	cfg.ExploreEnabled = explore.Key("enabled").MustBool(true)
